@@ -37,18 +37,7 @@ git submodule update --init --recursive
 ```
 
 This code was tested with Python 3.9 and PyTorch 2.0.0 on Ubuntu 20.04. To install the dependencies, create and activate a new virtual environment with Python 3.9, install PyTorch from source (https://pytorch.org/get-started/locally/), and install using `requirements.txt` for the rest of the dependencies into the virtual environment. 
-<!---
-Internal notes: reproducing on our server, we will need to run additional steps due to lack of venv library, but in typical cases user should be able to construct venv using the `python3 -m venv` method. https://stackoverflow.com/questions/21664108/install-virtualenv-using-pip-or-pip3
-```bash
-conda create -n <conda-env> python=3.9
-conda info --envs
-conda activate <conda-env>
-(conda-env) pip3 install virtualenv
-(conda-env) virtualenv -p python3 <path/to/venv>
-(conda-env) conda deactivate
-source <path/to/venv>/bin/activate
-```
--->
+
 ```bash
 python3 -m venv <path/to/venv> && source <path/to/venv>/bin/activate                             # create and activate virtual environment
 pip3 install -r requirements.txt                                                                 # install required packages
