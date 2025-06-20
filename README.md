@@ -102,13 +102,11 @@ This work is implemented based on many open-source projects, including [CoDEPS](
 ## Citation
 If you reference this work, please consider citing the following:
 ```
-@ARTICLE{10857473,
+@article{ral2025dectrain,
+  title={DecTrain: Deciding When to Train a Monocular Depth DNN Online},
   author={Fu, Zih-Sing and Sudhakar, Soumya and Karaman, Sertac and Sze, Vivienne},
-  journal={IEEE Robotics and Automation Letters}, 
-  title={DecTrain: Deciding When to Train a Monocular Depth DNN Online}, 
+  journal={IEEE Robotics and Automation Letters},
   year={2025},
-  volume={10},
-  number={3},
-  pages={2822-2829},
-  doi={10.1109/LRA.2025.3536206}}
+  publisher={IEEE}
+}
 ```
