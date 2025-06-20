@@ -1,0 +1,9 @@
+[submodule "libs/dinov2"]
+	path = libs/dinov2
+	url = https://github.com/soumya-ss/dinov2_with_aleatoric.git
+[submodule "libs/uncertainty_from_motion"]
+	path = libs/uncertainty_from_motion
+	url = https://github.com/mit-lean/ufm.git
+[submodule "libs/CoDEPS"]
+	path = libs/CoDEPS
+	url = https://github.com/robot-learning-freiburg/CoDEPS.git

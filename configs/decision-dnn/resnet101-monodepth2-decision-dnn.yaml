@@ -1,0 +1,184 @@
+dataset_cfgs:
+  ewm_alpha: null
+  input_cols:
+  - depth_avg
+  - depth_var
+  - depth_mid
+  - depth_max
+  - aleatoric_avg_0
+  - aleatoric_var_0
+  - aleatoric_mid_0
+  - aleatoric_max_0
+  - translation_avg_0
+  - translation_max_0
+  - translation_min_0
+  - rotation_avg_0
+  - rotation_max_0
+  - rotation_min_0
+  - landmark_cnt_avg_0
+  - aleatoric_avg_1
+  - aleatoric_var_1
+  - aleatoric_mid_1
+  - aleatoric_max_1
+  - translation_avg_1
+  - translation_max_1
+  - translation_min_1
+  - rotation_avg_1
+  - rotation_max_1
+  - rotation_min_1
+  - landmark_cnt_avg_1
+  - aleatoric_avg_2
+  - aleatoric_var_2
+  - aleatoric_mid_2
+  - aleatoric_max_2
+  - translation_avg_2
+  - translation_max_2
+  - translation_min_2
+  - rotation_avg_2
+  - rotation_max_2
+  - rotation_min_2
+  - landmark_cnt_avg_2
+  - epistemic_avg
+  - epistemic_var
+  - epistemic_mid
+  - epistemic_max
+  - prev_loss_curr
+  output_cols:
+  - loss_diff_rate
+  sma_window: null
+  tests:
+  - input_rows:
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    model_groups:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 1
+    - 1
+    - 1
+    - 1
+    - 1
+    model_idx:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    pattern_idx:
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    seq_names:
+    - scene0141_00
+    - scene0362_00
+    - scene0181_00
+    - scene0320_00
+    - scene0286_00
+    - scene0141_00
+    - scene0362_00
+    - scene0181_00
+    - scene0320_00
+    - scene0286_00
+  train:
+    input_rows:
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    model_groups:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 1
+    - 1
+    - 1
+    - 1
+    - 1
+    model_idx:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    pattern_idx:
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    - null
+    seq_names:
+    - scene0141_00
+    - scene0362_00
+    - scene0181_00
+    - scene0320_00
+    - scene0286_00
+    - scene0141_00
+    - scene0362_00
+    - scene0181_00
+    - scene0320_00
+    - scene0286_00
+dataset_dir: resnet101-monodepth2-statistics
+dnn_train_cfgs:
+  batch_size: 512
+  epochs: 50
+  learning_rate: 0.001
+  loss: corrcoef+mse
+  loss_weights:
+    corrcoef: 1
+    l1: 1
+    mse: 1
+  momentum: 0.9
+  optimizer: adam
+  use_transform: true
+model_cfgs:
+  activation: relu
+  biased: false
+  device: cuda:0
+  hidden_dims:
+  - 32
+  - 32
+  input_dim: 42
+  model: dnn-mlp
+  normalize: standard
+  output_dim: 1

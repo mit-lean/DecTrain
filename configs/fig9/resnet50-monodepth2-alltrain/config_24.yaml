@@ -1,0 +1,107 @@
+ablation_target:
+- none
+acquisition_type: all
+activate_dropout:
+- true
+- true
+- true
+add_sway: false
+alpha: null
+arch: resnet50_monodepth2
+batch_size: 3
+bn_adapt: false
+brightness_scale:
+- 1.0
+buffer_max_size: 300
+buffer_num_epochs: 1
+buffer_window_size: 2
+device:
+- cuda:0
+dnn_mode_for_training: eval
+ensemble_size: 1
+epochs: 1
+freeze_encoder: true
+height: 224
+interval: null
+learning_rate: 0.0001
+loss: codeps_depth_loss
+max_cloud_size: 100000
+modality:
+- rgb
+- d
+- pose
+momentum: null
+num_inferences: 1
+num_sway: 3
+online_buffer_configs: null
+online_policy_biased: null
+online_policy_norm: null
+online_policy_output_type: null
+online_policy_train_data_maxsize: null
+online_policy_train_method: null
+online_training_configs: null
+optimizer: Adam
+oracle_selection_file: null
+p: 0
+policy_model_path: null
+print_freq: 1
+profile_target: none
+random_percentage: null
+record_groundtruth_metric_gain: false
+record_policy_training_data: false
+record_policy_training_data_pattern: null
+regret_metric: null
+resume:
+- nyudepthv2.modality=rgb.arch=resnet50_monodepth2.criterion=heteroscedastic.lr=0.0001.adjustlr=1.optimizer=Adam.bs=4.pretrained=True.epochs=50.dropoutP=0.2.bootstrap=False.ensemble=1/checkpoint-49.pth.tar
+save_files: false
+save_models_epoch: false
+save_snapshot: false
+scheduler: None
+self_supervised_combine: min
+self_supervised_depth_mode: none
+self_supervised_enable_nll: false
+self_supervised_loss_weights:
+- 0
+- 10
+- 0.001
+self_supervised_reproj_mode: ssim
+self_supervised_sample_settings:
+  sample_mode: none
+self_supervised_weighted: none
+seq_idx_train:
+- null
+shuffle_train: false
+skip_idx:
+- 1
+sway_end_idx: -1
+sway_start_idx: 0
+train_dataset:
+- scannet_meta
+train_dir:
+- scannet/scans/scene0571_01/
+train_env:
+- scannet-scene0571_01
+train_split_end:
+- 1.0
+train_split_start:
+- 0
+train_transform: val
+training_dropout: false
+ufm_input_unc: null
+unc_method: none
+unc_type: none
+val_env:
+- scannet-scene0571_01
+val_target_dataset:
+- scannet_meta
+val_target_dir:
+- scannet/scans/scene0571_01/
+val_target_split_end:
+- 1.0
+val_target_split_start:
+- 0
+val_transform_type: direct_resizing
+validate: validate_no_dropout
+weight_decay: null
+width: 224
+workers: 10

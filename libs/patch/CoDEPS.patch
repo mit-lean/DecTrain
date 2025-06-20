@@ -1,0 +1,289 @@
+From 526692dc552040cbf73120dde94cafa97ab0bf2f Mon Sep 17 00:00:00 2001
+From: Zih-Sing Fu <zihsing@mit.edu>
+Date: Sun, 15 Jun 2025 23:19:48 -0400
+Subject: [PATCH] patch for usage in DecTrain
+
+---
+ __init__.py                |  3 ++
+ algos/__init__.py          | 24 +++++++-------
+ algos/depth.py             | 10 +++---
+ eval/__init__.py           |  6 ++--
+ misc/__init__.py           |  6 ++--
+ misc/image_warper.py       |  6 ++--
+ models/__init__.py         | 15 +++++----
+ models/depth_head.py       | 10 ++++--
+ models/uncertainty_head.py | 67 ++++++++++++++++++++++++++++++++++++++
+ 9 files changed, 112 insertions(+), 35 deletions(-)
+ create mode 100644 __init__.py
+ create mode 100644 models/uncertainty_head.py
+
+diff --git a/__init__.py b/__init__.py
+new file mode 100644
+index 0000000..2520409
+--- /dev/null
++++ b/__init__.py
+@@ -0,0 +1,3 @@
++from .models import DepthHead, ResnetEncoder, UncertaintyHead
++from .algos.depth import ReconstructionLoss, EdgeAwareSmoothnessLoss, SSIMLoss
++from .misc import *
+\ No newline at end of file
+diff --git a/algos/__init__.py b/algos/__init__.py
+index cb8ebf2..a45756e 100644
+--- a/algos/__init__.py
++++ b/algos/__init__.py
+@@ -1,4 +1,4 @@
+-from algos.depth import (
++from libs.CoDEPS.algos.depth import (
+     DepthAlgo,
+     EdgeAwareSmoothnessLoss,
+     FlowSmoothnessLoss,
+@@ -6,17 +6,17 @@ from algos.depth import (
+     ReconstructionLoss,
+     SSIMLoss,
+ )
+-from algos.instance_seg import (
+-    BinaryMaskLoss,
+-    CenterLoss,
+-    InstanceSegAlgo,
+-    OffsetLoss,
+-)
+-from algos.semantic_seg import (
+-    SemanticConsistencyLoss,
+-    SemanticLoss,
+-    SemanticSegAlgo,
+-)
++# from .instance_seg import (
++#     BinaryMaskLoss,
++#     CenterLoss,
++#     InstanceSegAlgo,
++#     OffsetLoss,
++# )
++# from .semantic_seg import (
++#     SemanticConsistencyLoss,
++#     SemanticLoss,
++#     SemanticSegAlgo,
++# )
+ 
+ __all__ = [
+     "DepthAlgo", "SemanticSegAlgo", "InstanceSegAlgo", "ReconstructionLoss", "SSIMLoss",
+diff --git a/algos/depth.py b/algos/depth.py
+index 414b658..7d69532 100644
+--- a/algos/depth.py
++++ b/algos/depth.py
+@@ -4,10 +4,10 @@ import torch
+ from torch import Tensor, nn
+ from torch.nn import functional as F
+ 
+-from datasets import get_labels
+-from eval import DepthEvaluator
+-from misc import CameraModel, ImageWarper, Laplace
+-from models import DepthHead, FlowHead, PoseHead, ResnetEncoder
++# from datasets import get_labels
++from libs.CoDEPS.eval import DepthEvaluator
++from libs.CoDEPS.misc import CameraModel, ImageWarper, Laplace
++from libs.CoDEPS.models import DepthHead, FlowHead, PoseHead, ResnetEncoder
+ 
+ # --------------------- Flow losses ---------------------- #
+ 
+@@ -592,4 +592,4 @@ class DepthAlgo:
+             "sparsity": flow_sparsity_loss
+         }
+         return depth_losses, flow_losses, depth_pred["target"], transformations["target"], \
+-               object_motion_maps["target"], None
++               object_motion_maps["target"], None
+\ No newline at end of file
+diff --git a/eval/__init__.py b/eval/__init__.py
+index 18f0553..1c5d2a7 100644
+--- a/eval/__init__.py
++++ b/eval/__init__.py
+@@ -1,5 +1,5 @@
+-from eval.depth import DepthEvaluator
+-from eval.panoptic import PanopticEvaluator
+-from eval.semantic import SemanticEvaluator
++from libs.CoDEPS.eval.depth import DepthEvaluator
++from libs.CoDEPS.eval.panoptic import PanopticEvaluator
++from libs.CoDEPS.eval.semantic import SemanticEvaluator
+ 
+ __all__ = ["DepthEvaluator", "PanopticEvaluator", "SemanticEvaluator"]
+diff --git a/misc/__init__.py b/misc/__init__.py
+index a4478e6..d1c6514 100644
+--- a/misc/__init__.py
++++ b/misc/__init__.py
+@@ -1,5 +1,5 @@
+-from misc.camera_model import CameraModel
+-from misc.image_filters import Laplace, Sobel
+-from misc.image_warper import ImageWarper
++from libs.CoDEPS.misc.camera_model import CameraModel
++from libs.CoDEPS.misc.image_filters import Laplace, Sobel
++from libs.CoDEPS.misc.image_warper import ImageWarper
+ 
+ __all__ = ['CameraModel', 'ImageWarper', 'Sobel', 'Laplace']
+diff --git a/misc/image_warper.py b/misc/image_warper.py
+index 44e54fb..e2a62f9 100644
+--- a/misc/image_warper.py
++++ b/misc/image_warper.py
+@@ -4,7 +4,7 @@ import torch
+ import torch.nn.functional as F
+ from torch import nn
+ 
+-from misc.camera_model import CameraModel
++from libs.CoDEPS.misc.camera_model import CameraModel
+ 
+ 
+ class _PointcloudToImage(nn.Module):
+@@ -127,7 +127,7 @@ class CoordinateWarper(nn.Module):
+         # Transform the obtained pointcloud into the local coordinate system of the target camera
+         # pose (homogeneous)
+         transformed_pointcloud = torch.bmm(
+-            T, image_as_pointcloud_homogeneous.view(batch_depth_map.size(0), 4, -1))
++            T.double(), image_as_pointcloud_homogeneous.view(batch_depth_map.size(0), 4, -1).double())
+         transformed_pointcloud = transformed_pointcloud.view(-1, 4, self.img_height,
+                                                              self.img_width)
+         if object_motion_map is not None:
+@@ -167,7 +167,7 @@ class ImageWarper(nn.Module):
+         #     f"The input batch of source images has {batch_src_img.size(1)} channels which is != 3"
+ 
+         pixel_coordinates = self.coordinate_warper(batch_camera_models, batch_depth_map, T,
+-                                                   object_motion_map)
++                                                   object_motion_map).float()
+ 
+         # ToDo: Here we use as padding mode "border" to account for pixels that are out of boundary.
+         #  We could actually detach them completely from the computation graph (not very clever
+diff --git a/models/__init__.py b/models/__init__.py
+index 841ab2f..557b091 100644
+--- a/models/__init__.py
++++ b/models/__init__.py
+@@ -1,8 +1,9 @@
+-from models.depth_head import DepthHead
+-from models.flow_head import FlowHead
+-from models.instance_head import InstanceHead
+-from models.pose_head import PoseHead
+-from models.resnet_encoder import ResnetEncoder
+-from models.semantic_head import SemanticHead
++from libs.CoDEPS.models.depth_head import DepthHead
++from libs.CoDEPS.models.flow_head import FlowHead
++from libs.CoDEPS.models.instance_head import InstanceHead
++from libs.CoDEPS.models.pose_head import PoseHead
++from libs.CoDEPS.models.resnet_encoder import ResnetEncoder
++from libs.CoDEPS.models.semantic_head import SemanticHead
++from libs.CoDEPS.models.uncertainty_head import UncertaintyHead
+ 
+-__all__ = ['DepthHead', 'FlowHead', 'InstanceHead', 'PoseHead', 'SemanticHead', 'ResnetEncoder']
++__all__ = ['DepthHead', 'FlowHead', 'InstanceHead', 'PoseHead', 'SemanticHead', 'ResnetEncoder', 'UncertaintyHead']
+diff --git a/models/depth_head.py b/models/depth_head.py
+index 0f88899..eafbb23 100644
+--- a/models/depth_head.py
++++ b/models/depth_head.py
+@@ -3,13 +3,12 @@ from typing import Tuple, Union
+ import numpy as np
+ import torch
+ import torch.nn.functional as F
+-from numpy.typing import ArrayLike
+ from torch import Tensor, nn
+ 
+ 
+ class DepthHead(nn.Module):
+ 
+-    def __init__(self, num_ch_enc: ArrayLike, use_skips: bool):
++    def __init__(self, num_ch_enc, use_skips):
+         super().__init__()
+ 
+         self.num_ch_enc = num_ch_enc
+@@ -55,6 +54,9 @@ class DepthHead(nn.Module):
+ 
+     def forward(self,
+                 in_feats: Tensor,
++                dropout_p: float = 0.0,
++                activate_dropout: bool = False,
++                last_layer_activate_dropout: bool = False,
+                 return_disparity: bool = False) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+         self.outputs = {}
+ 
+@@ -68,7 +70,11 @@ class DepthHead(nn.Module):
+             x = torch.cat(x, 1)
+             x = self.upconvs_1[str(i)](x)
+             if i in self.scales:
++                if i == 0 and last_layer_activate_dropout:
++                    x = F.dropout(x, p=dropout_p)
+                 self.outputs[i] = self.sigmoid(self.dispconvs[str(i)](x))
++            # add for MC-dropout or offline training
++            x = F.dropout(x, p=dropout_p, training=activate_dropout)
+ 
+         disp_map = self.outputs[0]
+         depth_map = self.disp_to_depth(disp_map)
+diff --git a/models/uncertainty_head.py b/models/uncertainty_head.py
+new file mode 100644
+index 0000000..38bd3fd
+--- /dev/null
++++ b/models/uncertainty_head.py
+@@ -0,0 +1,67 @@
++from typing import Tuple, Union
++
++import numpy as np
++import torch
++import torch.nn.functional as F
++from torch import Tensor, nn
++
++
++class UncertaintyHead(nn.Module):
++
++    def __init__(self, num_ch_enc, use_skips: bool):
++        super().__init__()
++
++        self.num_ch_enc = num_ch_enc
++        self.num_ch_dec = np.array([16, 32, 64, 128, 256])
++        self.use_skips = use_skips
++        self.scales = range(4)
++        self.outputs = {}
++
++        # Set up the up convolutions
++        self.upconvs_0, self.upconvs_1, self.uncconvs = nn.ModuleDict(), nn.ModuleDict(
++        ), nn.ModuleDict()
++
++        for i in range(4, -1, -1):
++            # Upconv 0
++            num_ch_in = self.num_ch_enc[-1] if i == 4 else self.num_ch_dec[i + 1]
++            num_ch_out = self.num_ch_dec[i]
++            self.upconvs_0[str(i)] = nn.Sequential(
++                nn.Conv2d(int(num_ch_in), int(num_ch_out), 3, stride=1, padding=1),
++                nn.ELU(inplace=True))
++
++            # Upconv 1
++            num_ch_in = self.num_ch_dec[i]
++            if self.use_skips and i > 0:
++                num_ch_in += self.num_ch_enc[i - 1]
++            num_ch_out = self.num_ch_dec[i]
++            self.upconvs_1[str(i)] = nn.Sequential(
++                nn.Conv2d(int(num_ch_in), int(num_ch_out), 3, stride=1, padding=1),
++                nn.ELU(inplace=True))
++
++        for s in self.scales:
++            self.uncconvs[str(s)] = nn.Sequential(nn.ReflectionPad2d(1),
++                                                   nn.Conv2d(int(self.num_ch_dec[s]), 1, 3))
++
++    def forward(self,
++                in_feats: Tensor,
++                dropout_p: float = 0.0,
++                activate_dropout: bool = False) -> Tensor:
++        self.uncertainties = {}
++
++        # decoder
++        x = in_feats[-1]
++        for i in range(4, -1, -1):
++            x = self.upconvs_0[str(i)](x)
++            x = [F.interpolate(x, scale_factor=2, mode="nearest")]
++            if self.use_skips and i > 0:
++                x += [in_feats[i - 1]]
++            x = torch.cat(x, 1)
++            x = self.upconvs_1[str(i)](x)
++            if i in self.scales:
++                self.uncertainties[i] = self.uncconvs[str(i)](x)
++            # add for MC-dropout or offline training
++            x = F.dropout(x, p=dropout_p, training=activate_dropout)
++
++        uncertainty = self.uncertainties[0]
++
++        return uncertainty # return log_var
+-- 
+2.25.1
+
