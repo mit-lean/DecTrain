@@ -26,6 +26,8 @@
 </p>
 
 This repo contains code to run DecTrain, an algorithm that decides when to train a monocular depth DNN, published in [our paper](https://ieeexplore.ieee.org/document/10857473).
+## Abstract 
+Deep neural networks (DNNs) can deteriorate in accuracy when deployment data differs from training data. While performing online training at all timesteps can improve accuracy, it is computationally expensive. We propose DecTrain, a new algorithm that decides when to train a monocular depth DNN online using self-supervision with low overhead. To make the decision at each timestep, DecTrain compares the cost of training with the predicted accuracy gain. We evaluate DecTrain on out-of-distribution data, and find DecTrain maintains accuracy compared to online training at all timesteps, while training only 44% of the time on average. We also compare the recovery of a low inference cost DNN using DecTrain and a more generalizable high inference cost DNN on various sequences. DecTrain recovers the majority (97%) of the accuracy gain of online training at all timesteps while reducing computation compared to the high inference cost DNN which recovers only 66%. With an even smaller DNN, we achieve 89% recovery while reducing computation by 56%. DecTrain enables low-cost online training for a smaller DNN to have competitive accuracy with a larger, more generalizable DNN at a lower overall computational cost.
 
 ## Installation
 Clone this repo and copy over submodules to a specific path (e.g. `dectrain`) using
